@@ -63,8 +63,8 @@ export default defineConfig(({ mode }): UserConfig => {
       },
       postcss: {
         plugins: [
-          require('autoprefixer'),
-          require('postcss-flexbugs-fixes')
+          ['autoprefixer', {}],
+          ['postcss-flexbugs-fixes', {}]
         ]
       }
     },
