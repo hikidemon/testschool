@@ -67,7 +67,12 @@ const router = createRouter({
         }
       ]
     },
-
+    {
+      path: '/parent',
+      name: 'ParentDashboard',
+      component: () => import('@/components/organisms/ParentContent.vue'),
+      meta: { requiresAuth: true, roles: ['parent'] }
+    },
     {
       path: '/:pathMatch(.*)*',
       component: NotFoundPage
