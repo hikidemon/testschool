@@ -1,140 +1,172 @@
 
 <template>
-  <el-container class="layout-container">
-    <el-header class="layout-header">
-      <div class="header-content">
-        <h1 class="header-title">{{ title }}</h1>
-        <el-dropdown class="user-menu" trigger="click">
-          <span class="user-menu-trigger">
-            {{ userStore.fullName }}
-            <el-icon class="el-icon--right"><arrow-down /></el-icon>
-          </span>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="navigateToProfile">
-                Профиль
-              </el-dropdown-item>
-              <el-dropdown-item @click="handleLogout">
-                Выйти
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+  <div class="layout">
+    <nav class="sidebar neumorphic">
+      <div class="logo emerald-gradient-text">
+        <h2>School Portal</h2>
       </div>
-    </el-header>
+      <div class="nav-links">
+        <router-link v-for="route in mainRoutes" 
+          :key="route.path" 
+          :to="route.path"
+          class="nav-link"
+          :class="{ active: currentRoute === route.path }">
+          <i :class="route.icon"></i>
+          {{ route.name }}
+        </router-link>
+      </div>
+    </nav>
     
-    <el-container>
-      <el-aside width="250px" class="layout-sidebar">
-        <el-menu
-          :default-active="currentRoute"
-          class="sidebar-menu"
-          @select="handleMenuSelect"
-        >
-          <el-menu-item 
-            v-for="item in menuItems" 
-            :key="item.route"
-            :index="item.route"
-          >
-            <el-icon><component :is="item.icon" /></el-icon>
-            <span>{{ item.title }}</span>
-          </el-menu-item>
-        </el-menu>
-      </el-aside>
+    <main class="main-content">
+      <header class="top-bar neumorphic">
+        <div class="user-controls">
+          <el-dropdown>
+            <span class="user-profile">
+              <el-avatar :size="32" class="neumorphic-inset">U</el-avatar>
+              <span>{{ userName }}</span>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="handleLogout">Выйти</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </header>
       
-      <el-main class="layout-main">
-        <slot />
-      </el-main>
-    </el-container>
-  </el-container>
+      <div class="content-area">
+        <slot></slot>
+      </div>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useUserStore } from '@/store/user'
-import { ArrowDown } from '@element-plus/icons-vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useUser } from '@/common/composables/useUser'
 
-const props = defineProps<{
-  title: string
-}>()
-
-const router = useRouter()
 const route = useRoute()
-const userStore = useUserStore()
+const router = useRouter()
+const { logout } = useUser()
 
 const currentRoute = computed(() => route.path)
+const userName = computed(() => 'User Name')
 
-const menuItems = computed(() => {
-  const items = [
-    { title: 'Расписание', route: '/schedule', icon: 'Calendar' },
-    { title: 'Мои группы', route: '/groups', icon: 'Users' }
-  ]
-  
-  if (userStore.isAdmin) {
-    items.push({ title: 'Управление', route: '/admin', icon: 'Setting' })
-  }
-  
-  return items
-})
-
-const handleMenuSelect = (route: string) => {
-  router.push(route)
-}
-
-const navigateToProfile = () => {
-  router.push('/profile')
-}
+const mainRoutes = [
+  { path: '/dashboard', name: 'Главная', icon: 'el-icon-house' },
+  { path: '/news', name: 'Новости', icon: 'el-icon-document' },
+  { path: '/events', name: 'События', icon: 'el-icon-calendar' },
+  { path: '/profile', name: 'Профиль', icon: 'el-icon-user' }
+]
 
 const handleLogout = async () => {
-  await userStore.logout()
+  await logout()
   router.push('/login')
 }
 </script>
 
 <style scoped lang="scss">
-.layout-container {
-  height: 100vh;
-}
-
-.layout-header {
-  background: #fff;
-  border-bottom: 1px solid #dcdfe6;
-  padding: 0 20px;
-  
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 100%;
-  }
-  
-  .header-title {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #303133;
-  }
-}
-
-.layout-sidebar {
-  background: #fff;
-  border-right: 1px solid #dcdfe6;
-}
-
-.layout-main {
-  background: #f5f7fa;
+.layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+  background: var(--surface-light);
+  gap: 20px;
   padding: 20px;
 }
 
-.user-menu {
-  &-trigger {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.sidebar {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: sticky;
+  top: 20px;
+  height: calc(100vh - 40px);
+
+  .logo {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--emerald-primary);
+    h2 {
+      margin: 0;
+    }
   }
 }
 
-.sidebar-menu {
-  border-right: none;
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: var(--text-dark);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:hover, &.active {
+    background: var(--emerald-primary);
+    color: var(--text-light);
+    box-shadow: 
+      4px 4px 8px var(--shadow-dark),
+      -4px -4px 8px var(--shadow-light);
+  }
+
+  i {
+    font-size: 20px;
+  }
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1200px;
+}
+
+.top-bar {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.user-controls {
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 24px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: var(--emerald-light);
+    }
+  }
+}
+
+.content-area {
+  background: var(--surface-light);
+  border-radius: 20px;
+  padding: 24px;
+  min-height: calc(100vh - 140px);
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
 }
 </style>

@@ -1,132 +1,127 @@
 
 <template>
-  <div class="data-table">
-    <div class="data-table-header">
-      <el-input
-        v-if="searchable"
-        v-model="searchQuery"
-        placeholder="Поиск..."
-        class="search-input"
-      >
-        <template #prefix>
-          <el-icon><search /></el-icon>
-        </template>
-      </el-input>
-      
-      <slot name="actions" />
+  <div class="data-table neumorphic">
+    <div class="table-header">
+      <slot name="header">
+        <h3 class="emerald-gradient-text">{{ title }}</h3>
+      </slot>
+      <div class="table-actions">
+        <slot name="actions"></slot>
+      </div>
     </div>
     
-    <el-table
-      v-loading="loading"
-      :data="filteredData"
+    <el-table 
+      :data="data" 
       style="width: 100%"
-      :border="true"
-      stripe
-    >
-      <slot />
-      
-      <template #empty>
-        <el-empty :description="emptyText" />
-      </template>
+      :border="false"
+      class="custom-table">
+      <slot></slot>
     </el-table>
     
-    <div class="data-table-footer">
+    <div class="table-footer">
       <el-pagination
-        v-if="pagination"
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="totalItems"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        v-if="showPagination"
+        :current-page="currentPage"
+        :page-size="pageSize"
+        :total="total"
+        layout="prev, pager, next"
+        @current-change="handlePageChange"
+        class="neumorphic-inset"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Search } from '@element-plus/icons-vue'
-
-const props = defineProps({
+defineProps({
   data: {
     type: Array,
     required: true
   },
-  loading: {
-    type: Boolean,
-    default: false
+  title: {
+    type: String,
+    default: ''
   },
-  searchable: {
-    type: Boolean,
-    default: false
-  },
-  pagination: {
+  showPagination: {
     type: Boolean,
     default: true
   },
-  emptyText: {
-    type: String,
-    default: 'Нет данных'
+  currentPage: {
+    type: Number,
+    default: 1
+  },
+  pageSize: {
+    type: Number,
+    default: 10
+  },
+  total: {
+    type: Number,
+    default: 0
   }
 })
 
-const emit = defineEmits(['update:page', 'update:pageSize'])
+const emit = defineEmits(['page-change'])
 
-const searchQuery = ref('')
-const currentPage = ref(1)
-const pageSize = ref(10)
-
-const filteredData = computed(() => {
-  let result = [...props.data]
-  
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(item => 
-      Object.values(item).some(val => 
-        String(val).toLowerCase().includes(query)
-      )
-    )
-  }
-  
-  return result
-})
-
-const totalItems = computed(() => filteredData.value.length)
-
-const handleSizeChange = (val: number) => {
-  pageSize.value = val
-  emit('update:pageSize', val)
-}
-
-const handleCurrentChange = (val: number) => {
-  currentPage.value = val
-  emit('update:page', val)
+const handlePageChange = (page: number) => {
+  emit('page-change', page)
 }
 </script>
 
 <style scoped lang="scss">
 .data-table {
-  background: #fff;
-  border-radius: 4px;
-  padding: 20px;
-  
-  &-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    
-    .search-input {
-      width: 300px;
-    }
+  padding: 24px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0;
   }
+}
+
+.table-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.table-footer {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+:deep(.custom-table) {
+  --el-table-border-color: var(--emerald-light);
+  --el-table-header-bg-color: var(--surface-light);
+  --el-table-row-hover-bg-color: var(--emerald-light);
   
-  &-footer {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
+  th {
+    background-color: var(--surface-light) !important;
+    font-weight: 600;
+    color: var(--emerald-primary);
+  }
+
+  td {
+    transition: all 0.3s ease;
+  }
+}
+
+:deep(.el-pagination) {
+  padding: 8px 16px;
+  border-radius: 12px;
+  
+  .el-pager li {
+    background: transparent;
+    color: var(--text-dark);
+    
+    &.is-active {
+      color: var(--emerald-primary);
+      font-weight: bold;
+    }
   }
 }
 </style>
