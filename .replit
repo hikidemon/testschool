@@ -18,11 +18,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm install"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "CHOKIDAR_USEPOLLING=true VITE_CJS_IGNORE_WARNING=true npm run dev -- --host 0.0.0.0 --port 8080 --force"
+args = "NODE_ENV=development VITE_CJS_IGNORE_WARNING=true CHOKIDAR_USEPOLLING=true npm install && npm run dev -- --host 0.0.0.0 --port 8080 --force --fs-strict=false"
 
 [[workflows.workflow]]
 name = "Build"
