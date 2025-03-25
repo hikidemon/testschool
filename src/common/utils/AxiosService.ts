@@ -1,87 +1,56 @@
-import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-
-//import { ref } from 'vue'
-
-import axios from 'axios'
-import useError from '@/common/composables/useError/useError'
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { useUserStore } from '@/store/user'
+import router from '@/router'
 
 export type ApiResponseType<T = unknown> = {
-  id: any
   data: T
+  status: number
+  message?: string
 }
-
-export type ApiErrorType<T = unknown> = {
-  data: T
-  message: string
-}
-
-export type ServiceResponseType<T, E = unknown> = Promise<
-  [null, AxiosResponse<ApiResponseType<T>>] | [AxiosError<ApiErrorType<E>>]
->
-
-//const isRefreshed = ref(false)
-const { setErrorShow, setErrorMessage } = useError()
 
 export class AxiosService {
-  readonly axiosInstance!: AxiosInstance
+  private static instance: AxiosInstance
 
-  constructor(config?: AxiosRequestConfig) {
-    this.axiosInstance = axios.create(config)
-
-    /** Request handler */
-    this.axiosInstance.interceptors.request.use(async (config: any) => {
-      config.headers['Accept-Language'] = 'ru'
-
-      return config
-    })
-
-    /** Response handler */
-    this.axiosInstance.interceptors.response.use(
-      (response) => {
-        return Promise.resolve(response)
-      },
-      async (error) => {
-        switch (error?.response?.status) {
-          case 401:
-            return
-
-          case 403:
-            setErrorShow(true)
-
-            setErrorMessage(error?.response?.data)
-
-            break
-
-          default:
-            setErrorShow(true)
-
-            setErrorMessage(error?.response?.data?.message)
-
-            break
+  public static getInstance(): AxiosInstance {
+    if (!this.instance) {
+      this.instance = axios.create({
+        baseURL: import.meta.env.VITE_API_URL,
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json'
         }
+      })
 
+      this.setupInterceptors()
+    }
+    return this.instance
+  }
+
+  private static setupInterceptors() {
+    this.instance.interceptors.request.use(
+      (config) => {
+        const userStore = useUserStore()
+        const token = userStore.token
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+      },
+      (error) => Promise.reject(error)
+    )
+
+    this.instance.interceptors.response.use(
+      (response) => response,
+      async (error: AxiosError) => {
+        if (error.response?.status === 401) {
+          const userStore = useUserStore()
+          userStore.logout()
+          router.push('/login')
+        }
         return Promise.reject(error)
       }
     )
   }
-
-  public async axiosCall<T = any>(config: AxiosRequestConfig): ServiceResponseType<T> {
-    try {
-      const response = await this.axiosInstance.request<ApiResponseType<T>>(config)
-
-      return [null, response]
-    } catch (error: any) {
-      return [error as AxiosError<ApiErrorType>]
-    }
-  }
 }
 
-const getBaseUrl = (): string => {
-  return import.meta.env.DEV ? '/api' : [import.meta.env.VITE_BASE_URL, '/api'].join('')
-}
-
-export const API_CONFIG: AxiosRequestConfig = {
-  baseURL: getBaseUrl(),
-  withCredentials: true,
-  timeout: 600000
-}
+export const api = AxiosService.getInstance()
