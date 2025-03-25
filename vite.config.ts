@@ -1,10 +1,9 @@
+
 import { defineConfig, loadEnv, UserConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import svgLoader from 'vite-svg-loader'
 import AutoImport from 'unplugin-vue-components/vite'
 import Components from 'unplugin-vue-components/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -19,30 +18,31 @@ const componentsConfig = Components({
   resolvers: [ElementPlusResolver()]
 })
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }): UserConfig => {
   loadEnv(mode, process.cwd(), '')
 
   return {
     build: {
-      target: 'esnext'
+      target: ['es2015', 'chrome63', 'edge79', 'firefox67', 'safari12'],
+      polyfillDynamicImport: true,
+      cssCodeSplit: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'element-plus': ['element-plus'],
+            'vue-vendor': ['vue', 'vue-router', 'pinia']
+          }
+        }
+      }
     },
     plugins: [
       vue(),
       vueJsx(),
       svgLoader(),
       vueDevTools(),
-      svgLoader(),
       autoImportConfig,
       componentsConfig,
-      basicSsl({
-        /** name of certification */
-        name: 'test',
-        /** custom trust domains */
-        domains: ['*.custom.com'],
-        /** custom certification directory */
-        certDir: '/Users/.../.devServer/cert'
-      })
+      basicSsl()
     ],
     resolve: {
       alias: {
@@ -60,13 +60,19 @@ export default defineConfig(({ mode }): UserConfig => {
           `,
           api: 'modern-compiler'
         }
+      },
+      postcss: {
+        plugins: [
+          require('autoprefixer'),
+          require('postcss-flexbugs-fixes')
+        ]
       }
     },
     server: {
-      // @ts-ignore
       https: true,
-      host: true,
-      port: 8080
+      host: '0.0.0.0',
+      port: 8080,
+      cors: true
     }
   }
 })

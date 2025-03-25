@@ -1,26 +1,38 @@
-import 'dayjs/locale/ru'
-import '@/common/composables/usePermissions'
-import '@/assets/styles/_element-variables.scss'
-import 'styles/index.scss'
-import { vMaska } from 'maska/vue'
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import ElementPlus from 'element-plus'
+import { dayjs } from 'element-plus'
+import 'dayjs/locale/ru'
+import { vMaska } from 'maska/vue'
 import App from '@/App.vue'
 import router from '@/router'
-import ElementPlus, { dayjs } from 'element-plus'
+import '@/assets/styles/_element-variables.scss'
+import 'styles/index.scss'
 
+// Configure dayjs
 dayjs.locale('ru')
 
+// Create Vue app
 const app = createApp(App)
 
+// Use plugins
 app.use(ElementPlus)
-
-const pinia = createPinia()
-
-app.use(pinia)
-
+app.use(createPinia())
 app.use(router)
 
+// Directives
 app.directive('maska', vMaska)
 
+// Error handling
+app.config.errorHandler = (err, vm, info) => {
+  console.error('Global error:', err)
+  console.error('Vue instance:', vm)
+  console.error('Error info:', info)
+}
+
+// Performance monitoring
+app.config.performance = true
+
+// Mount app
 app.mount('#app')
