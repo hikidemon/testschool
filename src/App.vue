@@ -3,7 +3,7 @@
     <theme-provider>
       <el-config-provider :locale="ru">
         <layout-default>
-          <router-view v-loading="isGlobalLoading" />
+          <router-view v-loading="isGlobalLoading" class="fade-in" />
         </layout-default> </el-config-provider
     ></theme-provider>
   </div>
