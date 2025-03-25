@@ -1,4 +1,3 @@
-
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useUserStore } from '@/store/user'
 import router from '@/router'
@@ -74,3 +73,7 @@ export class AxiosService {
 }
 
 export const api = AxiosService.getInstance()
+
+export const API_CONFIG = {
+  // Add your API configuration here if needed.
+};
