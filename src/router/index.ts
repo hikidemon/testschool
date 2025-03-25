@@ -74,6 +74,12 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['parent'] }
     },
     {
+      path: '/admin/events',
+      name: 'AdminEvents',
+      component: () => import('@/pages/AdminEventRegistrations.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: NotFoundPage
     }
