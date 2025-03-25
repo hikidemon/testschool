@@ -1,0 +1,45 @@
+@use 'sass:color';
+
+// colors
+$color-white: #fff;
+$color-white-dark: #f5f5f5;
+$color-black: #2c2c2c;
+$color-black-light: #333;
+$color-primary: #36ac55;
+$color-primary-dark: #3d8263;
+$color-primary-light: #4effa7;
+$color-emerald: #1dd3af;
+$color-secondary: #fba0c9;
+$color-secondary-dark: #9e628c;
+$color-secondary-light: #ffbbeb;
+$color-dark: #1d2021;
+$color-primary-gradient: #03ff89, #48f2b9, #6dedc2;
+$animation-gradient: gradient-shift 4s linear infinite;
+$box-shadow:
+  0 0 20px rgba(80, 200, 144, 0.7),
+  0 0 30px rgba(80, 200, 172, 0.5),
+  0 0 50px rgba(80, 200, 164, 0.3);
+
+$shadow:
+  0.3rem 0.3rem 0.6rem var(--greyLight-2),
+  -0.2rem -0.2rem 0.5rem var(--white);
+$inner-shadow:
+  inset 0.2rem 0.2rem 0.5rem var(--greyLight-2),
+  inset -0.2rem -0.2rem 0.5rem var(--white);
+
+$colors: (
+  white: $color-white,
+  black: $color-black,
+  primary: $color-primary,
+  secondary: $color-secondary,
+  dark: $color-dark,
+  primary-dark: $color-primary-dark,
+  primary-light: $color-primary-light,
+  secondary-dark: $color-secondary-dark,
+  secondary-light: $color-secondary-light,
+  emerald: $color-emerald,
+  primary-gradient: $color-primary-gradient,
+  black-light: $color-black-light,
+  white-dark: $color-white-dark,
+  box-shadow: $box-shadow
+);
