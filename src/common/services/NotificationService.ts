@@ -6,6 +6,12 @@ export class NotificationService {
   static async updateNotificationSettings(settings: {
     method: 'email' | 'telegram'
     telegramId?: string
+    email?: string
+    notifications: {
+      schedule: boolean
+      news: boolean
+      events: boolean
+    }
   }) {
     try {
       await axios.post('/api/notifications/settings', settings)
@@ -23,12 +29,18 @@ export class NotificationService {
     }
   }
 
-  static async sendInvite(childId: number) {
+  static async sendNotification(data: {
+    userId: string
+    type: 'schedule' | 'news' | 'event'
+    title: string
+    message: string
+  }) {
     try {
-      await axios.post(`/api/children/${childId}/invite`)
+      await axios.post('/api/notifications/send', data)
       return true
     } catch (error) {
-      throw new Error('Failed to send invite')
+      console.error('Failed to send notification:', error)
+      return false
     }
   }
 }

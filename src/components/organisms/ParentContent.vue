@@ -15,6 +15,25 @@
         <el-form-item v-if="notificationSettings.method === 'telegram'" label="Telegram ID">
           <el-input v-model="notificationSettings.telegramId" />
         </el-form-item>
+        <el-form-item v-if="notificationSettings.method === 'email'" label="Email">
+          <el-input v-model="notificationSettings.email" type="email" />
+        </el-form-item>
+        
+        <el-divider>Уведомлять о:</el-divider>
+        
+        <el-form-item>
+          <el-checkbox v-model="notificationSettings.notifications.schedule">Изменениях в расписании</el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="notificationSettings.notifications.news">Новых новостях</el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="notificationSettings.notifications.events">Новых мероприятиях</el-checkbox>
+        </el-form-item>
+        
+        <el-form-item>
+          <el-button type="primary" @click="saveNotificationSettings">Сохранить настройки</el-button>
+        </el-form-item>
       </el-form>
     </div>
 
@@ -79,7 +98,31 @@ import { ElNotification } from 'element-plus'
 
 const notificationSettings = ref({
   method: 'email',
-  telegramId: ''
+  telegramId: '',
+  email: '',
+  notifications: {
+    schedule: true,
+    news: true,
+    events: true
+  }
+})
+
+const saveNotificationSettings = async () => {
+  await NotificationService.updateNotificationSettings(notificationSettings.value)
+}
+
+onMounted(() => {
+  // Subscribe to WebSocket updates
+  if (userStore.userId) {
+    webSocketService.subscribeToUpdates(userStore.userId)
+  }
+})
+
+onUnmounted(() => {
+  // Unsubscribe from WebSocket updates
+  if (userStore.userId) {
+    webSocketService.unsubscribeFromUpdates(userStore.userId)
+  }
 })
 
 const children = ref([])
