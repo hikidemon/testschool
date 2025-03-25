@@ -1,14 +1,17 @@
+
+export type UserRole = 'admin' | 'teacher' | 'student' | 'parent' | 'simplified' | 'guest';
+
 export interface User {
-  id?: string
-  avatarUrl?: string
-  name?: string
-  bio?: string
-  email?: string
-  phone?: string
-  address?: string
-  birthdate?: string
-  occupation?: string
-  subjects?: string[]
-  points?: number
-  vkLink?: string
+  id: number;
+  email: string;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+  notificationPreference: 'email' | 'telegram';
+  telegramId?: string;
+  children?: number[]; // For parent role - child IDs
+  school?: string;
+  grade?: number;
+  location?: string;
+  groups?: number[];
 }
