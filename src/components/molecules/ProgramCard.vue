@@ -41,6 +41,9 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'MoleculeProgramCard'
+})
 import { ref, onMounted } from 'vue'
 import { Delete, Close } from '@element-plus/icons-vue'
 import { ElNotification } from 'element-plus'
