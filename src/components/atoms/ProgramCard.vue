@@ -12,6 +12,9 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'AtomProgramCard'
+})
 defineProps<{
   title: string
   description: string

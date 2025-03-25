@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useUserStore } from '@/store/user'
 import router from '@/router'
+import { ElNotification } from 'element-plus' // Added import for ElNotification
 
 export type ApiResponseType<T = unknown> = {
   data: T
@@ -50,16 +51,42 @@ export class AxiosService {
     this.instance.interceptors.response.use(
       (response) => response,
       async (error: AxiosError<ApiErrorType>) => {
-        if (error.response?.status === 401) {
-          const userStore = useUserStore()
-          await userStore.logout()
-          router.push('/login')
-        } else if (error.response?.status === 403) {
-          router.push('/forbidden')
-        }
+        this.handleError(error) // Call the handleError method
         return Promise.reject(error)
       }
     )
+  }
+
+  private static handleError(error: AxiosError<ApiErrorType>): void { // Added static keyword
+    const userStore = useUserStore()
+
+    switch (error.response?.status) {
+      case 401:
+        userStore.logout()
+        router.push('/auth')
+        this.showNotification('Ошибка авторизации', 'error')
+        break
+      case 403:
+        this.showNotification('Нет доступа к ресурсу', 'error')
+        break
+      case 404:
+        this.showNotification('Ресурс не найден', 'error')
+        break
+      case 500:
+        this.showNotification('Ошибка сервера', 'error')
+        break
+      default:
+        this.showNotification('Произошла ошибка', 'error')
+    }
+  }
+
+  private static showNotification(message: string, type: 'success' | 'warning' | 'info' | 'error'): void { // Added static keyword
+    ElNotification({
+      title: 'Уведомление',
+      message,
+      type,
+      duration: 3000
+    })
   }
 
   protected async axiosCall<T>(config: AxiosRequestConfig): ServiceResponseType<T> {
