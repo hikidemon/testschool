@@ -1,92 +1,64 @@
 <template>
-  <div class="main-layout">
-    <admin-panel v-if="isAdmin" />
-    <div v-else class="left-side">
-      <profile-card />
-    </div>
-    <div class="right-side">
-      <toggle-panel class="toggle-container" v-model="showSchedule" @toggle-view="toggleView" />
-      <div class="content">
-        <schedule-card v-if="showSchedule" />
-        <event-card v-else />
+  <div class="profile-container fade-in">
+    <ProfileCard class="spotify-card" />
+    <div class="profile-info-container">
+      <ProfileInfo class="spotify-card pulse" />
+      <div class="profile-actions">
+        <AButton class="edit-button" @click="handleEdit">
+          Редактировать профиль
+        </AButton>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import ProfileCard from '../molecules/ProfileCard.vue'
-import ScheduleCard from '../molecules/ScheduleCard.vue'
-import EventCard from '../molecules/EventCard.vue'
-import TogglePanel from '../molecules/TogglePanel.vue'
-import AdminPanel from '@/components/organisms/AdminPanel.vue'
-import { authService } from '@/common/utils/AuthService'
+import { ref } from 'vue'
+import ProfileCard from '@/components/molecules/ProfileCard.vue'
+import ProfileInfo from '@/components/molecules/ProfileInfo.vue'
+import AButton from '@/components/atoms/AButton.vue'
 
-const showSchedule = ref(true)
-const isAdmin = ref(false)
-
-const toggleView = (value: boolean) => {
-  showSchedule.value = value
+const handleEdit = () => {
+  // Add edit functionality
 }
-
-const checkAdminRole = async () => {
-  try {
-    const [error, response] = await authService.check<{ id_role: string }>()
-
-    if (!error && response?.data.data.id_role === 'admin') {
-      isAdmin.value = true
-    }
-  } catch (error) {
-    console.error('Ошибка при проверке роли:', error)
-  }
-}
-
-onMounted(() => {
-  checkAdminRole()
-})
 </script>
 
 <style scoped lang="scss">
-.main-layout {
-  display: flex;
-  padding: 20px;
-  gap: 20px;
+.profile-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-.left-side {
-  width: 300px;
-}
-
-.right-side {
-  flex: 2;
-  margin-left: 325px;
+.profile-info-container {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
 }
 
-.toggle-container {
+.profile-actions {
   display: flex;
-  margin-bottom: 0px;
-  width: 140%;
-  margin-left: -20%;
+  justify-content: flex-end;
+  padding: 1rem;
 }
 
-.toggle-button {
-  padding: 0px;
-  color: var(--color-white);
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+.edit-button {
+  background: var(--emerald-primary);
+  border-radius: 500px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 
-.toggle-container .toggle-button:first-child {
-  margin-right: 10px;
-}
-
-.content {
-  width: 500px;
-  padding: 20px;
-  border-radius: 8px;
+  &:hover {
+    background: var(--emerald-light);
+    transform: scale(1.05);
+  }
 }
 </style>

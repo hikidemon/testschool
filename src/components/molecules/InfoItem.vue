@@ -1,100 +1,63 @@
 <template>
   <div class="info-item">
-    <span class="info-item__label">{{ label }}:</span>
-    <el-input
-      v-if="isEditing"
-      v-model="localValue"
-      @blur="saveChanges"
-      @keyup.enter="saveChanges"
-      size="small"
-      :autosize="{ minRows: 1, maxRows: 5 }"
-      type="textarea"
-      class="info-item__input"
-    />
-    <span v-else class="info-item__value">{{ value }}</span>
-    <el-button class="info-item__edit" type="text" @click="startEditing">
-      <el-icon>
-        <edit />
-      </el-icon>
-    </el-button>
+    <div class="info-icon">
+      <i :class="'fas fa-' + icon"></i>
+    </div>
+    <div class="info-content">
+      <span class="info-label">{{ label }}</span>
+      <span class="info-value">{{ value || 'Не указано' }}</span>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { Edit } from '@element-plus/icons-vue'
-
-const props = defineProps<{
+defineProps<{
   label: string
-  value: string
+  value?: string
+  icon: string
 }>()
-
-const emit = defineEmits(['update'])
-
-const isEditing = ref(false)
-const localValue = ref(props.value)
-
-watch(
-  () => props.value,
-  (newValue) => {
-    localValue.value = newValue
-  }
-)
-
-const startEditing = () => {
-  isEditing.value = true
-}
-
-const saveChanges = () => {
-  isEditing.value = false
-
-  emit('update', localValue.value)
-}
 </script>
 
 <style scoped lang="scss">
 .info-item {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-  padding: 10px;
-  background: #f9f9f9;
+  gap: 1rem;
+  padding: 1rem;
   border-radius: 8px;
-  transition: background 0.3s ease;
-  min-width: 100%;
+  background: var(--surface-darker);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateX(4px);
+    background: var(--surface-dark);
+  }
 }
 
-.info-item:hover {
-  background: var(--color-white)-dark;
+.info-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--emerald-primary);
+  color: var(--text-light);
 }
 
-.info-item__label {
-  font-weight: bold;
-  margin-right: 10px;
-  color: $color-emerald;
-  white-space: nowrap;
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-.info-item__value {
-  flex-grow: 1;
-  color: #7f8c8d;
-  min-width: 100px;
-  word-break: break-word;
+.info-label {
+  font-size: 0.875rem;
+  color: var(--text-gray);
 }
 
-.info-item__input {
-  flex-grow: 1;
-  width: 100%;
-  min-width: 200px;
-}
-
-.info-item__edit {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  color: $color-emerald;
-}
-
-.info-item:hover .info-item__edit {
-  opacity: 1;
+.info-value {
+  font-size: 1rem;
+  color: var(--text-light);
 }
 </style>

@@ -1,222 +1,149 @@
 <template>
-  <el-card class="user-card">
-    <div class="user-card__header">
-      <el-avatar :size="100" :src="user.avatarUrl || Avatar" class="user-card__avatar" />
-      <div class="user-card__main-info">
-        <h2 class="user-card__name h2">{{ user.name }}</h2>
-      </div>
-    </div>
-
-    <div class="user-card__basic-info">
-      <info-item
-        v-for="field in basicFields"
-        :key="field.key"
-        :label="field.label"
-        :value="user[field.key]"
-        @update="(value) => updateField(field.key as keyof User, value)"
+  <div class="profile-card">
+    <div class="profile-image-container">
+      <AImage
+        :src="userImage || '/default-avatar.png'"
+        alt="Profile"
+        class="profile-image"
       />
-    </div>
-
-    <el-collapse-transition>
-      <div v-show="showDetails" class="user-card__details">
-        <info-item
-          v-for="field in additionalFields"
-          :key="field.key"
-          :label="field.label"
-          :value="user[field.key]"
-          @update="(value) => updateField(field.key as keyof User, value)"
+      <div class="image-overlay">
+        <label for="image-upload" class="upload-button">
+          <i class="fas fa-camera"></i>
+        </label>
+        <input
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          @change="handleImageUpload"
+          class="hidden"
         />
       </div>
-    </el-collapse-transition>
-
-    <div class="user-card__footer">
-      <el-button class="user-card__button" type="text" @click="showDetails = !showDetails">
-        {{ showDetails ? 'Скрыть детали' : 'Показать больше' }}
-        <el-icon class="el-icon--right">
-          <component :is="showDetails ? ArrowUp : ArrowDown" />
-        </el-icon>
-      </el-button>
     </div>
-  </el-card>
+    <h2 class="profile-name">{{ fullName }}</h2>
+    <p class="profile-role">{{ role }}</p>
+    <div class="profile-stats">
+      <div class="stat-item">
+        <span class="stat-value">{{ groupsCount }}</span>
+        <span class="stat-label">Группы</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ eventsCount }}</span>
+        <span class="stat-label">События</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { ElMessage, ElNotification } from 'element-plus'
-import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
-import InfoItem from '../molecules/InfoItem.vue'
-import { userService } from '@/common/utils/UserService'
-import type { User } from '@/common/types/User'
-import Avatar from '../../assets/icons/6.png'
+import { computed, ref } from 'vue'
+import { useUser } from '@/common/composables/useUser'
 
-const user = ref<User>({
-  avatarUrl: Avatar,
-  name: 'Иван Иванов',
-  bio: 'Люблю программирование',
-  email: 'ivan@example.com',
-  phone: '+7 (999) 123-45-67',
-  address: 'ул. Пушкина, д. 10',
-  birthdate: '1990-01-01',
-  occupation: 'Программист'
-})
+const { currentUser } = useUser()
 
-const showDetails = ref(false)
-
-const basicFields = computed(
-  () =>
-    [
-      { key: 'email', label: 'Email' },
-      { key: 'phone', label: 'Телефон' }
-    ] as const
+const fullName = computed(() => 
+  currentUser.value ? `${currentUser.value.name} ${currentUser.value.surname}` : 'Пользователь'
 )
 
-const additionalFields = computed(
-  () =>
-    [
-      { key: 'address', label: 'Адрес' },
-      { key: 'birthdate', label: 'Дата рождения' },
-      { key: 'occupation', label: 'Род деятельности' }
-    ] as const
-)
+const role = computed(() => currentUser.value?.role || 'Студент')
+const groupsCount = computed(() => currentUser.value?.groups?.length || 0)
+const eventsCount = ref(0) 
 
-const fetchUserProfile = async () => {
-  try {
-    const [error, response] = await userService.getUser('userId')
-
-    if (error) throw error
-
-    if (response?.data) {
-      user.value = { ...user.value, ...response.data }
-    }
-  } catch (error) {
-    console.error('Ошибка при загрузке данных пользователя:', error)
-
-    ElNotification({
-      title: 'Ошибка',
-      message: 'Не удалось загрузить данные пользователя',
-      type: 'error',
-      position: 'bottom-right'
-    })
-  }
+const handleImageUpload = (event: Event) => {
+  // Implement image upload logic
 }
-
-const updateField = async (field: keyof User, value: string) => {
-  try {
-    const [error] = await userService.updateUser('userId', { [field]: value })
-
-    if (error) throw error
-
-    user.value[field] = value
-
-    ElNotification({
-      title: 'Успешно',
-      message: 'Данные обновлены',
-      type: 'success',
-      position: 'bottom-right'
-    })
-  } catch (error) {
-    console.error('Ошибка при обновлении данных:', error)
-
-    ElNotification({
-      title: 'Ошибка',
-      message: 'Не удалось обновить данные',
-      type: 'error',
-      position: 'bottom-right'
-    })
-  }
-}
-
-fetchUserProfile()
 </script>
 
 <style scoped lang="scss">
-.user-card {
-  max-width: 600px;
-  margin: auto;
-  width: 170%;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: $box-shadow;
-}
-
-.user-card__header {
-  display: flex;
-  margin-bottom: 20px;
-  align-items: flex-start;
-}
-
-.user-card__main-info {
-  margin-left: 20px;
-}
-
-.user-card__name {
-  margin: 0;
-  font-size: 1.8rem;
-  word-wrap: break-word;
-  align-items: center;
-}
-
-.user-card__avatar {
-  flex-shrink: 0;
-  width: 100px;
-  height: 100px;
-  margin-right: 20px;
-}
-
-.user-card__basic-info,
-.user-card__details {
-  margin-bottom: 20px;
-}
-
-.user-card__footer {
+.profile-card {
+  padding: 2rem;
   text-align: center;
-}
+  background: var(--surface-light);
+  border-radius: 16px;
+  transition: all 0.3s ease;
 
-.info-item__input {
-  min-width: 200px;
-  flex-grow: 1;
-  padding: 5px;
-  font-size: 1rem;
-}
-
-.user-card__button {
-  color: $color-emerald;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
-.user-card__button:hover,
-.user-card__button:active {
-  background-image: linear-gradient(90deg, $color-primary-gradient);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  animation: gradient-shift 4s linear infinite;
-}
-
-h2,
-h2::after {
-  margin-top: 0;
-  margin-bottom: 40px;
-  font-size: clamp(1rem, 1rem + 2vw, 6rem);
-  background: linear-gradient(90deg, #1dd3af, #48f2b9, #6aedc1);
-  background-size: 500% 100%;
-  animation: gradient-shift 4s linear infinite;
-  color: transparent;
-  background-clip: text;
-}
-
-h2::after {
-  filter: blur(6px);
-  position: absolute;
-  z-index: 1;
-  left: 0;
-  mix-blend-mode: darken;
-}
-
-@keyframes blend {
-  to {
-    background-position: 400% 100%;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
+}
+
+.profile-image-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+
+  &:hover .image-overlay {
+    opacity: 1;
+  }
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.upload-button {
+  color: white;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-light);
+}
+
+.profile-role {
+  color: var(--text-gray);
+  margin: 0.5rem 0 1.5rem;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--surface-darker);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--emerald-primary);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-gray);
 }
 </style>
