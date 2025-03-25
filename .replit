@@ -22,7 +22,7 @@ args = "npm install"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cross-env NODE_ENV=development FORCE_COLOR=1 npm run dev -- --host 0.0.0.0 --port 8080 --fs-allow-dangerous-protocols"
+args = "CHOKIDAR_USEPOLLING=true VITE_CJS_IGNORE_WARNING=true npm run dev -- --host 0.0.0.0 --port 8080 --force"
 
 [[workflows.workflow]]
 name = "Build"
