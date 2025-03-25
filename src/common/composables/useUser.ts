@@ -21,21 +21,26 @@ export const useUser = () => {
   const currentUser = ref<UserData | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const retryCount = ref(0)
 
   const fullName = computed(() => {
     if (!currentUser.value) return ''
     return `${currentUser.value.surname} ${currentUser.value.name}`
   })
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (retry = true) => {
     isLoading.value = true
     error.value = null
     try {
       const { data } = await api.get('/api/user/profile')
       currentUser.value = data
-    } catch (err) {
-      error.value = 'Ошибка загрузки данных пользователя'
-      console.error(err)
+      retryCount.value = 0
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Ошибка загрузки данных пользователя'
+      if (retry && retryCount.value < 3 && err.response?.status !== 401) {
+        retryCount.value++
+        setTimeout(() => fetchUserData(true), 1000 * retryCount.value)
+      }
     } finally {
       isLoading.value = false
     }
@@ -48,8 +53,8 @@ export const useUser = () => {
       const { data } = await api.patch('/api/user/profile', userData)
       currentUser.value = { ...currentUser.value, ...data }
       return true
-    } catch (err) {
-      error.value = 'Ошибка обновления данных'
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Ошибка обновления данных'
       return false
     } finally {
       isLoading.value = false

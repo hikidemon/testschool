@@ -1,3 +1,4 @@
+
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useUserStore } from '@/store/user'
 import router from '@/router'
@@ -8,6 +9,14 @@ export type ApiResponseType<T = unknown> = {
   message?: string
 }
 
+export type ApiErrorType = {
+  message: string
+  code?: string
+  errors?: Record<string, string[]>
+}
+
+export type ServiceResponseType<T> = Promise<[AxiosError<ApiErrorType> | null, T | null]>
+
 export class AxiosService {
   private static instance: AxiosInstance
 
@@ -15,7 +24,7 @@ export class AxiosService {
     if (!this.instance) {
       this.instance = axios.create({
         baseURL: import.meta.env.VITE_API_URL,
-        timeout: 10000,
+        timeout: 15000,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -41,15 +50,26 @@ export class AxiosService {
 
     this.instance.interceptors.response.use(
       (response) => response,
-      async (error: AxiosError) => {
+      async (error: AxiosError<ApiErrorType>) => {
         if (error.response?.status === 401) {
           const userStore = useUserStore()
-          userStore.logout()
+          await userStore.logout()
           router.push('/login')
+        } else if (error.response?.status === 403) {
+          router.push('/forbidden')
         }
         return Promise.reject(error)
       }
     )
+  }
+
+  protected async axiosCall<T>(config: AxiosRequestConfig): ServiceResponseType<T> {
+    try {
+      const response = await this.getInstance().request<T>(config)
+      return [null, response.data]
+    } catch (error) {
+      return [error as AxiosError<ApiErrorType>, null]
+    }
   }
 }
 
